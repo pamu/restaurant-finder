@@ -65,4 +65,13 @@ package object codecs {
       Decoder[UpdateRestaurantAddress].widen,
       Decoder[UpdateRestaurantDescription].widen
     ).reduceLeft(_ or _)
+
+  implicit lazy val updateActionEncoder: Encoder[UpdateAction] = Encoder.instance {
+    case a: UpdateRestaurant => a.asJson
+    case a: UpdateRestaurantName => a.asJson
+    case a: UpdateRestaurantPhoneNumber => a.asJson
+    case a: UpdateRestaurantCuisines => a.asJson
+    case a: UpdateRestaurantAddress => a.asJson
+    case a: UpdateRestaurantDescription => a.asJson
+  }
 }

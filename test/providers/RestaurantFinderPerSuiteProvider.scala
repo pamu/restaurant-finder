@@ -17,5 +17,9 @@ trait RestaurantFinderPerSuiteProvider
   override lazy val context: ApplicationLoader.Context =
     ApplicationLoader.createContext(Environment.simple(mode = Mode.Test))
 
-  override def components: RestaurantFinderModule = new RestaurantFinderModule(context)
+  override def components: RestaurantFinderModule = {
+    val module = new RestaurantFinderModule(context)
+    module.flywayPlayInitializer.onStart()
+    module
+  }
 }
