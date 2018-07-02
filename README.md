@@ -13,7 +13,20 @@ Built on top of playframwork scala and slick
     7. Flyway database migration
     8. Scala test for tests
 
+### Docker
+
+To run on docker ensure docker system is running on your system
+
+go to the project root
+
+```bash
+./docker.sh
+```
+
+
 ### REST API
+
+
 
 
 
@@ -22,11 +35,11 @@ Built on top of playframwork scala and slick
 
 ### Instructions
 
-1. Compiling the project source
+1. Compiling the project
 
    `sbt compile`
 
-2. Compiling the project tests course
+2. Compiling the project tests
 
    `sbt test:compile`
 
@@ -42,7 +55,3 @@ Built on top of playframwork scala and slick
 ### Screenshots
 
 ![Tests](test/resources/tests.png)
-
-
-
-
