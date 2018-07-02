@@ -15,13 +15,23 @@ Built on top of playframwork scala and slick
 
 ### Docker
 
-To run on docker ensure docker system is running on your system
+To run on docker, ensure docker system daemon is running on your system
 
 go to the project root
 
 ```bash
-./docker.sh
+> ./docker.sh
 ```
+
+If `docker.sh` has no execute permission then do
+
+```bash
+> chmod +x docker.sh
+> ./docker.sh
+```
+
+
+![Docker](test/resources/docker.png)
 
 
 ### REST API
