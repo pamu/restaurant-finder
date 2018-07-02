@@ -24,11 +24,11 @@ package object validations {
     ).mapN(RestaurantData)
 
   def validateUpdateAction(action: UpdateAction): Validation[UpdateAction] = action match {
-    case UpdateRestaurant(id, data) => validateRestaurantData(data).map(_ => action)
-    case UpdateRestaurantName(id, name) =>  nonEmpty("Name", name).map(_ => action)
-    case UpdateRestaurantPhoneNumber(id, phoneNumber) => nonEmpty("Phone number", phoneNumber).map(_ => action)
-    case UpdateRestaurantCuisines(id, cuisines) => cuisines.validNel[ValidationException].map(_ => action)
-    case UpdateRestaurantAddress(id, address) =>  nonEmpty("Address", address).map(_ => action)
-    case UpdateRestaurantDescription(id, description) => nonEmpty("Description", description).map(_ => action)
+    case UpdateRestaurant(_, data) => validateRestaurantData(data).map(_ => action)
+    case UpdateRestaurantName(_, name) =>  nonEmpty("Name", name).map(_ => action)
+    case UpdateRestaurantPhoneNumber(_, phoneNumber) => nonEmpty("Phone number", phoneNumber).map(_ => action)
+    case UpdateRestaurantCuisines(_, cuisines) => cuisines.validNel[ValidationException].map(_ => action)
+    case UpdateRestaurantAddress(_, address) =>  nonEmpty("Address", address).map(_ => action)
+    case UpdateRestaurantDescription(_, description) => nonEmpty("Description", description).map(_ => action)
   }
 }
