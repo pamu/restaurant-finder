@@ -4,7 +4,7 @@ import java.util.UUID
 
 import cats.Eq
 
-case class CuisineId(id: UUID) extends AnyVal
+case class CuisineId(value: UUID) extends AnyVal
 
 object CuisineId {
   implicit val eq: Eq[CuisineId] = Eq.fromUniversalEquals[CuisineId]

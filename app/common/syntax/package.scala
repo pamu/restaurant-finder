@@ -1,32 +1,32 @@
 package common
 
-import cats.data.Validated.{Invalid, Valid}
-import cats.data.ValidatedNel
-import common.result.{HttpFailure, HttpSuccess}
-import exceptions.ValidationException
-import monix.eval.Task
-import play.api.mvc.Result
-import play.api.mvc.Results._
-import io.circe.syntax._
-import codecs._
+import common.http.result.{HttpFailure, HttpSuccess}
+import common.results.Result
+import exceptions.{AppException, ResourceNotFoundException, RuntimeServerException, ValidationException}
 import io.circe.Encoder
+import io.circe.syntax._
+import monix.eval.Task
 import play.api.libs.circe.CirceJsonWritableImplicits
+import play.api.mvc.Results._
+import play.api.mvc.{Result => PlayResult}
+import codecs._
+import play.api.libs.circe.CirceJsonWritable._
 
 package object syntax {
 
-  implicit class CompleteResultOps[A: Encoder](val result: Task[ValidatedNel[ValidationException, A]])
-    extends CirceJsonWritableImplicits {
-
-    def playResult: Task[Result] = result.map {
-      case Valid(a) => Ok(HttpSuccess(a).asJson)
-      case Invalid(e) => BadRequest(HttpFailure(e.toList.map(_.getMessage)).asJson)
-    }.onErrorHandle(ex => InternalServerError(HttpFailure(ex.getMessage :: Nil).asJson))
+  implicit class ResultOps[A: Encoder](val result: Result[A]) {
+    def playResult: Task[PlayResult] =
+      result.map(payload => Ok(HttpSuccess(payload).asJson))
+        .onErrorHandle {
+          case aex: AppException => handleAppException(aex)
+          case ex: Throwable => InternalServerError(HttpFailure(ex.getMessage).asJson)
+        }
   }
 
-  implicit class ResultOps[A: Encoder](val result: Task[A]) extends CirceJsonWritableImplicits {
-    def playResult: Task[Result] =
-      result.map(payload => Ok(HttpSuccess(payload).asJson))
-        .onErrorHandle(ex => InternalServerError(HttpFailure(ex.getMessage :: Nil).asJson))
+  def handleAppException(ex: AppException): PlayResult = ex match {
+    case ex: ValidationException => BadRequest(HttpFailure(ex.getMessage).asJson)
+    case ex: ResourceNotFoundException => NotFound(HttpFailure(ex.getMessage).asJson)
+    case ex: RuntimeServerException => InternalServerError(HttpFailure(ex.getMessage).asJson)
   }
 
 }

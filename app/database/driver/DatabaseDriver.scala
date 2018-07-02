@@ -15,7 +15,8 @@ trait DatabaseDriver {
   type DBWriteAction = DBIOAction[Unit, NoStream, Write]
   lazy val noDBUpdates: DBWriteAction = DBIO.successful[Unit](())
 
-  def runTask[R](a: DBIOAction[R, NoStream, Nothing]): Task[R] =
-    Task.deferFuture(database.run(a))
+  implicit class DBIOOps[R](a: DBIOAction[R, NoStream, Nothing]) {
+    def run: Task[R] = Task.deferFuture(database.run(a))
+  }
 
 }

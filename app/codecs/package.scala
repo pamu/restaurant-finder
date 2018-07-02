@@ -1,9 +1,11 @@
-import common.result.{HttpFailure, HttpSuccess}
-import domain.actions.{CreateRestaurant, UpdateRestaurant}
-import domain.{Cuisine, CuisineId, Restaurant, RestaurantId}
+import common.http.result.{HttpFailure, HttpSuccess}
+import domain.actions._
+import domain._
 import io.circe._
 import io.circe.generic.semiauto._
 import domain.query._
+import io.circe.syntax._
+import cats.syntax.functor._
 
 package object codecs {
   implicit lazy val cuisineIdEncoder: Encoder[CuisineId] = deriveEncoder[CuisineId]
@@ -18,11 +20,29 @@ package object codecs {
   implicit lazy val restaurantEncoder: Encoder[Restaurant] = deriveEncoder[Restaurant]
   implicit lazy val restaurantDecoder: Decoder[Restaurant] = deriveDecoder[Restaurant]
 
+  implicit lazy val restaurantDataEncoder: Encoder[RestaurantData] = deriveEncoder[RestaurantData]
+  implicit lazy val restaurantDataDecoder: Decoder[RestaurantData] = deriveDecoder[RestaurantData]
+
   implicit lazy val createRestaurantEncoder: Encoder[CreateRestaurant] = deriveEncoder[CreateRestaurant]
   implicit lazy val createRestaurantDecoder: Decoder[CreateRestaurant] = deriveDecoder[CreateRestaurant]
 
   implicit lazy val updateRestaurantEncoder: Encoder[UpdateRestaurant] = deriveEncoder[UpdateRestaurant]
   implicit lazy val updateRestaurantDecoder: Decoder[UpdateRestaurant] = deriveDecoder[UpdateRestaurant]
+
+  implicit lazy val updateRestaurantNameDecoder: Decoder[UpdateRestaurantName] = deriveDecoder[UpdateRestaurantName]
+  implicit lazy val updateRestaurantNameEncoder: Encoder[UpdateRestaurantName] = deriveEncoder[UpdateRestaurantName]
+
+  implicit lazy val updateRestaurantPhoneNumberDecoder: Decoder[UpdateRestaurantPhoneNumber] = deriveDecoder[UpdateRestaurantPhoneNumber]
+  implicit lazy val updateRestaurantPhoneNumberEncoder: Encoder[UpdateRestaurantPhoneNumber] = deriveEncoder[UpdateRestaurantPhoneNumber]
+
+  implicit lazy val updateRestaurantCuisinesDecoder: Decoder[UpdateRestaurantCuisines] = deriveDecoder[UpdateRestaurantCuisines]
+  implicit lazy val updateRestaurantCuisinesEncoder: Encoder[UpdateRestaurantCuisines] = deriveEncoder[UpdateRestaurantCuisines]
+
+  implicit lazy val updateRestaurantAddressDecoder: Decoder[UpdateRestaurantAddress] = deriveDecoder[UpdateRestaurantAddress]
+  implicit lazy val updateRestaurantAddressEncoder: Encoder[UpdateRestaurantAddress] = deriveEncoder[UpdateRestaurantAddress]
+
+  implicit lazy val updateRestaurantDescriptionDecoder: Decoder[UpdateRestaurantDescription] = deriveDecoder[UpdateRestaurantDescription]
+  implicit lazy val updateRestaurantDescriptionEncoder: Encoder[UpdateRestaurantDescription] = deriveEncoder[UpdateRestaurantDescription]
 
   implicit lazy val allRestaurantsEncoder: Encoder[AllRestaurants.type] = deriveEncoder[AllRestaurants.type]
   implicit lazy val allRestaurantsDecoder: Decoder[AllRestaurants.type] = deriveDecoder[AllRestaurants.type]
@@ -35,4 +55,14 @@ package object codecs {
 
   implicit lazy val httpFailureEncoder: Encoder[HttpFailure] = deriveEncoder[HttpFailure]
   implicit lazy val httpFailureDecoder: Decoder[HttpFailure] = deriveDecoder[HttpFailure]
+
+  implicit lazy val updateActionDecoder: Decoder[UpdateAction] =
+    List[Decoder[UpdateAction]](
+      Decoder[UpdateRestaurant].widen,
+      Decoder[UpdateRestaurantName].widen,
+      Decoder[UpdateRestaurantPhoneNumber].widen,
+      Decoder[UpdateRestaurantCuisines].widen,
+      Decoder[UpdateRestaurantAddress].widen,
+      Decoder[UpdateRestaurantDescription].widen
+    ).reduceLeft(_ or _)
 }

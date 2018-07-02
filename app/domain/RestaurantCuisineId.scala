@@ -1,7 +1,5 @@
 package domain
 
-import java.util.UUID
-
 import cats.Eq
 
 // Auto generated id

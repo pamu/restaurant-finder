@@ -1,17 +1,18 @@
-package nextabc
+package restaurantfinder
 
 import akka.stream.Materializer
 import akka.util.Timeout
+import controllers.RestaurantsController
 import org.scalatestplus.play.PlaySpec
 import play.api.Environment
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{POST, route}
-import providers.NextABCPerSuiteProvider
+import providers.RestaurantFinderPerSuiteProvider
 
 import scala.concurrent.duration._
 
-class AuthControllerSpec extends PlaySpec with NextABCPerSuiteProvider {
+class ResataurantsControllerSpec extends PlaySpec with RestaurantFinderPerSuiteProvider {
 
   "AuthController" must {
 
@@ -35,6 +36,6 @@ class AuthControllerSpec extends PlaySpec with NextABCPerSuiteProvider {
   implicit val implicitControllerComponents: ControllerComponents = components.controllerComponents
   implicit val mat: Materializer = components.materializer
 
-  val controller: AuthController = components.authController
+  val controller: RestaurantsController = components.restaurantsController
 
 }

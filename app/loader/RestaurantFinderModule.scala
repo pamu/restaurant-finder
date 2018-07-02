@@ -1,18 +1,17 @@
 package loader
 
-import com.typesafe.config.ConfigFactory
 import controllers.{AssetsComponents, RestaurantsController}
 import database.driver.DatabaseDriver
+import database.tables.restaurantcuisines.RestaurantCuisinesRepo
 import monix.execution.Scheduler
 import org.flywaydb.play.FlywayPlayComponents
-import play.api.Mode.{Dev, Prod, Test}
 import play.api._
-import play.api.libs.ws.ahc.AhcWSClient
 import play.api.mvc.{ControllerComponents, EssentialFilter}
 import play.filters.cors.{CORSConfig, CORSFilter}
 import play.filters.gzip.{GzipFilter, GzipFilterConfig}
 import play.filters.hosts.{AllowedHostsConfig, AllowedHostsFilter}
 import router.RestaurantFinderRouter
+import services.RestaurantsServiceImpl
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.Future
@@ -21,17 +20,6 @@ class RestaurantFinderModule(context: ApplicationLoader.Context)
   extends BuiltInComponentsFromContext(context)
     with AssetsComponents
     with FlywayPlayComponents {
-
-
-  override def configuration: Configuration = {
-    val confFile = environment.mode match {
-      case Dev => "dev.conf"
-      case Test => "test.conf"
-      case Prod => "prod.conf"
-    }
-    val environmentConfig = ConfigFactory.load(s"/environments/$confFile")
-    super.configuration ++ Configuration(environmentConfig)
-  }
 
   val corsFilter = new CORSFilter(CORSConfig.fromConfiguration(configuration))
   val gzipFilter = new GzipFilter(GzipFilterConfig.fromConfiguration(configuration))
@@ -51,43 +39,23 @@ class RestaurantFinderModule(context: ApplicationLoader.Context)
   implicit val implicitEnvironment: Environment = environment
   implicit val implicitControllerComponents: ControllerComponents = controllerComponents
 
-  /**
-    * First db driver has to load for everything to function
-    */
-  val databaseDriver: DatabaseDriver = environment.mode match {
-    case Prod =>
-      new DatabaseDriver {
-        val driver: JdbcProfile = slick.jdbc.PostgresProfile
-        val database: driver.api.Database =
-          driver.api.Database.forConfig("db.default", configuration.underlying)
-      }
-    case Dev =>
-      new DatabaseDriver {
-        val driver: JdbcProfile = slick.jdbc.PostgresProfile
-        val database: driver.api.Database =
-          driver.api.Database.forConfig("db.default", configuration.underlying)
-      }
-    case Test =>
-      new DatabaseDriver {
-        val driver: JdbcProfile = slick.jdbc.H2Profile
-        val database: driver.api.Database = driver.api.Database.forURL(
-          s"jdbc:h2:mem:test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1",
-          driver = "org.h2.Driver")
-      }
+
+  val databaseDriver: DatabaseDriver = new DatabaseDriver {
+    val driver: JdbcProfile = slick.jdbc.H2Profile
+    val database: driver.api.Database = driver.api.Database.forURL(
+      s"jdbc:h2:mem:test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1",
+      driver = "org.h2.Driver")
   }
 
 
-  flywayPlayInitializer
+  val repo = new RestaurantCuisinesRepo(databaseDriver)
+  val service = new RestaurantsServiceImpl(repo)
+  val restaurantsController = new RestaurantsController(service)
 
-  val wsClient = AhcWSClient()
-
-  val homeController = new RestaurantsController()
-
-  override val router = new RestaurantFinderRouter(homeController, assets)
+  override val router = new RestaurantFinderRouter(restaurantsController, assets)
 
   applicationLifecycle.addStopHook { () =>
     for {
-      _ <- Future(wsClient.close())
       _ <- Future(databaseDriver.database.close())
     } yield ()
   }
