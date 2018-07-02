@@ -51,7 +51,10 @@ class RestaurantsController(service: RestaurantsService)(
   }
 
   def updateRestaurant = Action.async(circe.json[UpdateAction]) { req =>
-    service(req.body).playResult.runAsync
+    validateUpdateAction(req.body) match {
+      case Valid(a) => service(a).playResult.runAsync
+      case Invalid(e) => Task.now(BadRequest(HttpFailure(e.toList.map(_.getMessage)).asJson)).runAsync
+    }
   }
 
   def deleteRestaurant(id: UUID) = Action.async {

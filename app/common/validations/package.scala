@@ -7,7 +7,7 @@ import exceptions.{EmptyString, ValidationException}
 import io.circe.{Json, Printer}
 import io.circe.parser._
 import codecs._
-import domain.actions.{CreateRestaurant, UpdateAction, UpdateRestaurantName, UpdateRestaurantPhoneNumber}
+import domain.actions._
 
 package object validations {
 
@@ -22,4 +22,13 @@ package object validations {
       nonEmpty("Address", data.address),
       nonEmpty("Description", data.description)
     ).mapN(RestaurantData)
+
+  def validateUpdateAction(action: UpdateAction): Validation[UpdateAction] = action match {
+    case UpdateRestaurant(id, data) => validateRestaurantData(data).map(_ => action)
+    case UpdateRestaurantName(id, name) =>  nonEmpty("Name", name).map(_ => action)
+    case UpdateRestaurantPhoneNumber(id, phoneNumber) => nonEmpty("Phone number", phoneNumber).map(_ => action)
+    case UpdateRestaurantCuisines(id, cuisines) => cuisines.validNel[ValidationException].map(_ => action)
+    case UpdateRestaurantAddress(id, address) =>  nonEmpty("Address", address).map(_ => action)
+    case UpdateRestaurantDescription(id, description) => nonEmpty("Description", description).map(_ => action)
+  }
 }
