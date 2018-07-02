@@ -5,6 +5,9 @@ import database.tables.restaurantcuisines.RestaurantCuisinesRepo
 import domain.Restaurant
 import domain.actions._
 import domain.query.{AllRestaurants, Query, Restaurants}
+import exceptions.RestaurantIdNotFound
+import monix.eval.Task
+import play.api.Logger
 
 trait RestaurantsService {
   def apply(action: Action): Result[String]
@@ -30,6 +33,11 @@ class RestaurantsServiceImpl(repo: RestaurantCuisinesRepo) extends RestaurantsSe
   }
   override def apply(query: Query): Result[Seq[Restaurant]] = query match {
     case AllRestaurants => repo.allRestaurants
-    case Restaurants(ids) => repo.restaurantByIds(ids)
+    case Restaurants(ids) => repo.restaurantByIds(ids).flatMap { items =>
+      if (items.isEmpty) {
+        Logger(classOf[RestaurantsServiceImpl]).info("requested resource is not found")
+        Task.raiseError(RestaurantIdNotFound(s"Requested resource not found"))
+      } else Task.now(items)
+    }
   }
 }
