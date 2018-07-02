@@ -6,10 +6,10 @@ import exceptions.{AppException, ResourceNotFoundException, RuntimeServerExcepti
 import io.circe.Encoder
 import io.circe.syntax._
 import monix.eval.Task
-import play.api.libs.circe.CirceJsonWritableImplicits
 import play.api.mvc.Results._
 import play.api.mvc.{Result => PlayResult}
 import codecs._
+import play.api.Logger
 import play.api.libs.circe.CirceJsonWritable._
 
 package object syntax {
@@ -23,10 +23,13 @@ package object syntax {
         }
   }
 
-  def handleAppException(ex: AppException): PlayResult = ex match {
-    case ex: ValidationException => BadRequest(HttpFailure(ex.getMessage).asJson)
-    case ex: ResourceNotFoundException => NotFound(HttpFailure(ex.getMessage).asJson)
-    case ex: RuntimeServerException => InternalServerError(HttpFailure(ex.getMessage).asJson)
+  def handleAppException(ex: AppException): PlayResult = {
+    Logger.error(ex.getMessage)
+    ex match {
+      case ex: ValidationException => BadRequest(HttpFailure(ex.getMessage).asJson)
+      case ex: ResourceNotFoundException => NotFound(HttpFailure(ex.getMessage).asJson)
+      case ex: RuntimeServerException => InternalServerError(HttpFailure(ex.getMessage).asJson)
+    }
   }
 
 }

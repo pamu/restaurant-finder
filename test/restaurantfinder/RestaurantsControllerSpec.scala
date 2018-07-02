@@ -12,13 +12,9 @@ import providers.RestaurantFinderPerSuiteProvider
 
 import scala.concurrent.duration._
 
-class ResataurantsControllerSpec extends PlaySpec with RestaurantFinderPerSuiteProvider {
+class RestaurantsControllerSpec extends PlaySpec with RestaurantFinderPerSuiteProvider {
 
-  "AuthController" must {
-
-    "add integers properly." in {
-      1 + 2 mustBe 3
-    }
+  "RestaurantsControllerSpec" must {
 
     "reject bad email" in {
       implicit val timeout: Timeout = Timeout(10 seconds)

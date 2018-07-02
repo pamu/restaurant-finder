@@ -8,6 +8,7 @@ import domain.{CuisineId, Restaurant, RestaurantData, RestaurantId}
 import exceptions.RestaurantIdNotFound
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
+import play.api.Logger
 
 class RestaurantCuisinesRepo(override val databaseDriver: DatabaseDriver)
   extends DatabaseDriverProvider
@@ -18,6 +19,8 @@ class RestaurantCuisinesRepo(override val databaseDriver: DatabaseDriver)
 
   import databaseDriver._
   import databaseDriver.driver.api._
+
+  private val LogTag = classOf[RestaurantCuisinesRepo]
 
   private val restaurants = TableQuery[RestaurantsTable]
   private val cuisines = TableQuery[CuisinesTable]
@@ -60,7 +63,9 @@ class RestaurantCuisinesRepo(override val databaseDriver: DatabaseDriver)
     (for {
       restaurant <- restaurantByIdsDBIO(Some(Seq(id))).map(_.headOption).flatMap {
         case Some(restaurant) => DBIO.successful(restaurant)
-        case None => DBIO.failed(RestaurantIdNotFound(s"Restaurant id: ${id.value} is not found"))
+        case None =>
+          Logger(LogTag).error(s"Restaurant id: ${id.value} not found")
+          DBIO.failed(RestaurantIdNotFound(s"Restaurant id: ${id.value} is not found"))
       }
       updatedData = updater(restaurant.restaurantData)
       _ <- deleteCuisinesDBIO(restaurant.cuisines.map(_.id): _*)
