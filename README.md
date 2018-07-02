@@ -1,6 +1,7 @@
 # Restaurant Finder micro-service
 
 ### Instructions
+
 1. Compiling the project source
 
    `sbt compile`
@@ -17,18 +18,9 @@
 
    `sbt test`
 
+### REST API
 
-Compile and run backend app
 
-```scala
-sbt compile run
-```
-
-Compile and run backend app tests
-
-```scala
-sbt test:compile test
-```
 
 
 
