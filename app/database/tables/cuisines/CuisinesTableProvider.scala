@@ -14,9 +14,7 @@ trait CuisinesTableProvider {
     def id = column[CuisineId]("id", O.PrimaryKey)
     def name = column[String]("name")
 
-    def * = (id, name) <> (
-      (CuisinesTable.Row.apply _).tupled,
-      CuisinesTable.Row.unapply)
+    def * = (id, name).mapTo[CuisinesTable.Row]
   }
 
 }
